@@ -43,11 +43,11 @@ BenchmarkDefaultSpinLock-16             100000000               8.760 ns/op
 BenchmarkMutex-16                       100000000              75.93 ns/op
 ````
 
-The actual overhead of using the adaptive lock for vert short critical sections is higher than a spinlock, but less than half of that of a mutex.    
+The actual overhead of using the adaptive lock for very short critical sections is higher than a spinlock, but less than half of that of a mutex. 
 Once you start adding more contention or hold a lock for more than a few microseconds or the critical section is more intense, the adaptive lock starts to perform better as shown below.    
 
-The following benchmarks are measuring the time of the completing the benchmark for 100,000,000 iterations.   
-Lower meaning it took less time overall. This is not measuring the isolated performance of the lock itself nor is that the goal.    
+The following benchmarks are measuring the time of the completing the benchmark for 100,000,000 iterations. 
+Lower meaning it took less time overall. This is not measuring the isolated performance of the lock itself nor is that the goal. 
 Those numbers are shown above.    
 
 Incrementing a counter and adding to a map ran with 2000 goroutines. 
