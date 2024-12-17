@@ -17,21 +17,21 @@ sl.Unlock()
 ````
 
 **What is an adaptive lock and how does it work?**    
-In simple terms, this is a lock that races against itself and goes to sleep if it can't lock. The locking mechanism    
-uses a CAS operation protected by a spinlock with a very short critical section that yields to another goroutine if it can't lock.    
-The sleep is handled by waiting on a channel with a single item buffer of a pre-defined pointer value.   
-When Unlock() is called, the channel will atomically signal that the lock is now available, and whichever goroutines happens to wake up   
-and read from the channel will have a chance to race and acquire the lock. The average cost of this during high contention or heavier    
+In simple terms, this is a lock that races against itself and goes to sleep if it can't lock. The locking mechanism 
+uses a CAS operation protected by a spinlock with a very short critical section that yields to another goroutine if it can't lock. 
+The sleep is handled by waiting on a channel with a single item buffer of a pre-defined pointer value. 
+When Unlock() is called, the channel will atomically signal that the lock is now available, and whichever goroutines happens to wake up 
+and read from the channel will have a chance to race and acquire the lock. The average cost of this during high contention or heavier 
 critical sections seems to perform better than both a mutex and a spinlock.    
 
 **Why does it work?**    
-My guess is that since we effectively put the goroutine to sleep by waiting on the channel, it allows for the go scheduler   
-to context switch to threads that actually have work to do rather than threads that have to check if there is work to do.    
-That let's us avoid redundant `runtime.Gosched()` calls which means less wasted time on context switching. This in turn    
+My guess is that since we effectively put the goroutine to sleep by waiting on the channel, it allows for the go scheduler 
+to context switch to threads that actually have work to do rather than threads that have to check if there is work to do. 
+That let's us avoid redundant `runtime.Gosched()` calls which means less wasted time on context switching. This in turn 
 also leads to vastly less cpu usage than spinlocks and a decrease in CPU usage even compared to a mutex since the busy loop is avoided.     
 
-On average, the overhead of the adaptive lock is higher than a spin lock with less resource usage and is less performant,    
-and lower overhead and more performant than a mutex. Long term the adaptive lock on average seems to be the most performant while    
+On average, the overhead of the adaptive lock is higher than a spin lock with less resource usage and is less performant, 
+and lower overhead and more performant than a mutex. Long term the adaptive lock on average seems to be the most performant while 
 maintaining the least amount of resource usage.    
 
 **How does the performance compare to mutex and spinlocks?**   
